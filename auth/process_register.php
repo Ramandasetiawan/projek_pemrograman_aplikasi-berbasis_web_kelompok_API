@@ -7,12 +7,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+$full_name = trim($_POST['full_name']);
 $username = trim($_POST['username']);
 $email = trim($_POST['email']);
+$phone = trim($_POST['phone'] ?? '');
+$address = trim($_POST['address'] ?? '');
 $password = $_POST['password'];
 
-if (empty($username) || empty($email) || empty($password)) {
-    header('Location: register.php?error=Semua kolom wajib diisi');
+if (empty($full_name) || empty($username) || empty($email) || empty($password)) {
+    header('Location: register.php?error=Semua kolom wajib diisi kecuali telepon dan alamat');
     exit;
 }
 
@@ -29,8 +32,8 @@ if ($stmt->fetch()) {
 }
 
 $hashed = password_hash($password, PASSWORD_DEFAULT);
-$stmt = $pdo->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
-$stmt->execute([$username, $email, $hashed]);
+$stmt = $pdo->prepare("INSERT INTO users (username, email, password, full_name, phone, address, role) VALUES (?, ?, ?, ?, ?, ?, 'customer')");
+$stmt->execute([$username, $email, $hashed, $full_name, $phone, $address]);
 
 header('Location: login.php?success=Registrasi berhasil! Silakan login.');
 exit;

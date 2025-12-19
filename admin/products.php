@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once '../includes/header.php';
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header('Location: ../auth/login.php');
     exit;
@@ -7,7 +7,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 require_once '../config/db.php';
 $stmt = $pdo->query("SELECT * FROM products ORDER BY created_at DESC");
 $products = $stmt->fetchAll();
-include '../includes/header.php';
 ?>
 <main class="flex-shrink-0">
 <div class="container mt-4">
@@ -27,9 +26,12 @@ include '../includes/header.php';
       <?php foreach ($products as $p): ?>
         <div class="col-md-4 mb-4">
           <div class="card">
-            <img src="../assets/images/<?= htmlspecialchars($p['image']) ?>" 
-                 class="card-img-top" height="200" 
-                 onerror="this.src='../assets/images/default.jpg'">
+            <?php 
+            $imageSrc = (strpos($p['image'], 'http') === 0) ? $p['image'] : '../assets/images/' . $p['image'];
+            ?>
+            <img src="<?= htmlspecialchars($imageSrc) ?>" 
+                 class="card-img-top" height="200" style="object-fit: cover;" 
+                 onerror="this.src='https://via.placeholder.com/500x300?text=No+Image'">
             <div class="card-body">
               <h5 class="card-title"><?= htmlspecialchars($p['name']) ?></h5>
               <p class="text-muted">Rp <?= number_format($p['price'], 0, ',', '.') ?> | Stok: <?= $p['stock'] ?></p>

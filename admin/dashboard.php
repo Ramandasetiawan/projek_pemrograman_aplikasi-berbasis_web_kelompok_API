@@ -1,10 +1,9 @@
 <?php
-session_start();
+require_once '../includes/header.php';
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header('Location: ../auth/login.php');
     exit;
 }
-include '../includes/header.php';
 ?>
 <main class="flex-shrink-0">
 <div class="container mt-4">

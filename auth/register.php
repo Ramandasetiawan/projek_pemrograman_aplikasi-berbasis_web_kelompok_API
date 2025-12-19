@@ -9,10 +9,19 @@
       <?php endif; ?>
       <form action="process_register.php" method="POST">
         <div class="mb-3">
+          <input type="text" name="full_name" class="form-control" placeholder="Nama Lengkap" required>
+        </div>
+        <div class="mb-3">
           <input type="text" name="username" class="form-control" placeholder="Username" required>
         </div>
         <div class="mb-3">
           <input type="email" name="email" class="form-control" placeholder="Email" required>
+        </div>
+        <div class="mb-3">
+          <input type="text" name="phone" class="form-control" placeholder="No. Telepon (opsional)">
+        </div>
+        <div class="mb-3">
+          <textarea name="address" class="form-control" placeholder="Alamat (opsional)" rows="2"></textarea>
         </div>
         <div class="mb-3">
           <input type="password" name="password" class="form-control" placeholder="Password (min 6 karakter)" required minlength="6">
