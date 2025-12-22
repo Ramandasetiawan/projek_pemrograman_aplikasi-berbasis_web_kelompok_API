@@ -1,4 +1,7 @@
-<?php include '../includes/header.php'; ?>
+<?php 
+require_once '../config/csrf.php';
+include '../includes/header.php'; 
+?>
 <main class="flex-shrink-0">
 <div class="container mt-5">
   <div class="row justify-content-center">
@@ -11,6 +14,7 @@
         <div class="alert alert-success"><?= htmlspecialchars($_GET['success']) ?></div>
       <?php endif; ?>
       <form action="process_login.php" method="POST">
+        <?= csrf_field() ?>
         <div class="mb-3">
           <input type="text" name="username" class="form-control" placeholder="Username atau Email" required>
         </div>

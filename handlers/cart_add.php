@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../config/db.php';
+require_once '../config/csrf.php';
 
 if (!isset($_SESSION['user_id'])) {
     header('Location: ../auth/login.php');
@@ -12,6 +13,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// Verify CSRF token
+check_csrf_token();
+
 $product_id = (int)$_POST['product_id'];
 $quantity = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 1;
 
@@ -21,7 +25,7 @@ $stmt->execute([$product_id]);
 $product = $stmt->fetch();
 
 if (!$product || $product['stock'] < $quantity) {
-    header('Location: index.php?error=Stok tidak mencukupi');
+    header('Location: ../public/index.php?error=Stok tidak mencukupi');
     exit;
 }
 
@@ -34,7 +38,7 @@ if ($existing) {
     // Update quantity
     $new_quantity = $existing['quantity'] + $quantity;
     if ($new_quantity > $product['stock']) {
-        header('Location: index.php?error=Stok tidak mencukupi');
+        header('Location: ../public/index.php?error=Stok tidak mencukupi');
         exit;
     }
     $stmt = $pdo->prepare("UPDATE cart SET quantity = ? WHERE id = ?");

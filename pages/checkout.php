@@ -1,5 +1,6 @@
 <?php
 require_once '../includes/header.php';
+require_once '../config/csrf.php';
 
 if (!isset($_SESSION['user_id'])) {
     header('Location: ../auth/login.php');
@@ -39,6 +40,9 @@ $user = $stmt->fetch();
 
 // Process order jika form disubmit
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Verify CSRF token
+    check_csrf_token();
+    
     $shipping_address = trim($_POST['shipping_address']);
     $payment_method = $_POST['payment_method'];
     $notes = trim($_POST['notes'] ?? '');
@@ -49,36 +53,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdo->beginTransaction();
             
-            // Insert order
-            $stmt = $pdo->prepare("
-                INSERT INTO orders (user_id, total_amount, status, payment_method, shipping_address, notes) 
-                VALUES (?, ?, 'pending', ?, ?, ?)
-            ");
-            $stmt->execute([$_SESSION['user_id'], $total, $payment_method, $shipping_address, $notes]);
-            $order_id = $pdo->lastInsertId();
-            
-            // Insert order items dari cart
+            // Validasi ulang stok untuk setiap item dengan row locking
+            $stock_errors = [];
             foreach ($cart_items as $item) {
-                $subtotal_item = $item['price'] * $item['quantity'];
-                $stmt = $pdo->prepare("
-                    INSERT INTO order_items (order_id, product_id, quantity, price, subtotal) 
-                    VALUES (?, ?, ?, ?, ?)
-                ");
-                $stmt->execute([$order_id, $item['product_id'], $item['quantity'], $item['price'], $subtotal_item]);
+                // Lock row untuk prevent race condition
+                $stmt = $pdo->prepare("SELECT id, stock FROM products WHERE id = ? FOR UPDATE");
+                $stmt->execute([$item['product_id']]);
+                $product = $stmt->fetch();
                 
-                // Update stok produk
-                $stmt = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
-                $stmt->execute([$item['quantity'], $item['product_id']]);
+                if (!$product) {
+                    $stock_errors[] = $item['name'] . " tidak ditemukan";
+                } elseif ($product['stock'] < $item['quantity']) {
+                    $stock_errors[] = $item['name'] . " stok tidak mencukupi (tersisa: " . $product['stock'] . ")";
+                }
             }
             
-            // Hapus cart
-            $stmt = $pdo->prepare("DELETE FROM cart WHERE user_id = ?");
-            $stmt->execute([$_SESSION['user_id']]);
-            
-            $pdo->commit();
-            
-            header('Location: order_success.php?order_id=' . $order_id);
-            exit;
+            // Jika ada error stok, rollback dan tampilkan error
+            if (!empty($stock_errors)) {
+                $pdo->rollBack();
+                $error = "Gagal checkout: " . implode(", ", $stock_errors);
+            } else {
+                // Insert order
+                $stmt = $pdo->prepare("
+                    INSERT INTO orders (user_id, total_amount, status, payment_method, shipping_address, notes) 
+                    VALUES (?, ?, 'pending', ?, ?, ?)
+                ");
+                $stmt->execute([$_SESSION['user_id'], $total, $payment_method, $shipping_address, $notes]);
+                $order_id = $pdo->lastInsertId();
+                
+                // Insert order items dan update stok
+                foreach ($cart_items as $item) {
+                    $subtotal_item = $item['price'] * $item['quantity'];
+                    $stmt = $pdo->prepare("
+                        INSERT INTO order_items (order_id, product_id, quantity, price, subtotal) 
+                        VALUES (?, ?, ?, ?, ?)
+                    ");
+                    $stmt->execute([$order_id, $item['product_id'], $item['quantity'], $item['price'], $subtotal_item]);
+                    
+                    // Update stok produk (already locked by FOR UPDATE)
+                    $stmt = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
+                    $stmt->execute([$item['quantity'], $item['product_id']]);
+                }
+                
+                // Hapus cart
+                $stmt = $pdo->prepare("DELETE FROM cart WHERE user_id = ?");
+                $stmt->execute([$_SESSION['user_id']]);
+                
+                $pdo->commit();
+                
+                header('Location: order_success.php?order_id=' . $order_id);
+                exit;
+            }
             
         } catch (Exception $e) {
             $pdo->rollBack();
@@ -97,6 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
     
     <form method="POST">
+        <?= csrf_field() ?>
         <div class="row">
             <div class="col-md-8">
                 <div class="card mb-4">

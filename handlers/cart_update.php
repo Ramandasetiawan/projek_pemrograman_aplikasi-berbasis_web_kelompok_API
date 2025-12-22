@@ -1,11 +1,15 @@
 <?php
 session_start();
 require_once '../config/db.php';
+require_once '../config/csrf.php';
 
 if (!isset($_SESSION['user_id']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../pages/cart.php');
     exit;
 }
+
+// Verify CSRF token
+check_csrf_token();
 
 $cart_id = (int)$_POST['cart_id'];
 $action = $_POST['action'];

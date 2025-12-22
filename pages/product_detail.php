@@ -24,15 +24,25 @@ if (!$product) {
     exit;
 }
 
-// Ambil produk terkait (kategori sama)
-$stmt = $pdo->prepare("
-    SELECT * FROM products 
-    WHERE category_id = ? AND id != ? 
-    ORDER BY RAND() 
-    LIMIT 4
-");
+// Ambil produk terkait (kategori sama) - optimized random selection
+// Get total count first
+$stmt = $pdo->prepare("SELECT COUNT(*) as total FROM products WHERE category_id = ? AND id != ?");
 $stmt->execute([$product['category_id'], $product_id]);
-$related_products = $stmt->fetchAll();
+$total = $stmt->fetchColumn();
+
+$related_products = [];
+if ($total > 0) {
+    // Use random offset instead of ORDER BY RAND() for better performance
+    $offset = max(0, rand(0, $total - min(4, $total)));
+    $stmt = $pdo->prepare("
+        SELECT * FROM products 
+        WHERE category_id = ? AND id != ? 
+        ORDER BY id
+        LIMIT 4 OFFSET ?
+    ");
+    $stmt->execute([$product['category_id'], $product_id, $offset]);
+    $related_products = $stmt->fetchAll();
+}
 
 $imageSrc = (strpos($product['image'], 'http') === 0) ? $product['image'] : 'assets/images/' . $product['image'];
 ?>

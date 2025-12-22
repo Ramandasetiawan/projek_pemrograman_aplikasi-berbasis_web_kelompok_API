@@ -1,5 +1,6 @@
 <?php
 require_once '../includes/header.php';
+require_once '../config/csrf.php';
 
 if (!isset($_SESSION['user_id'])) {
     header('Location: ../auth/login.php');
@@ -61,6 +62,7 @@ foreach ($cart_items as $item) {
                                 </div>
                                 <div class="col-md-3">
                                     <form action="../handlers/cart_update.php" method="POST" class="d-flex align-items-center">
+                                        <?= csrf_field() ?>
                                         <input type="hidden" name="cart_id" value="<?= $item['id'] ?>">
                                         <button type="submit" name="action" value="decrease" class="btn btn-sm btn-outline-secondary">-</button>
                                         <input type="number" name="quantity" value="<?= $item['quantity'] ?>" 
@@ -75,6 +77,7 @@ foreach ($cart_items as $item) {
                                 </div>
                                 <div class="col-md-1 text-end">
                                     <form action="../handlers/cart_remove.php" method="POST">
+                                        <?= csrf_field() ?>
                                         <input type="hidden" name="cart_id" value="<?= $item['id'] ?>">
                                         <button type="submit" class="btn btn-sm btn-danger" 
                                                 onclick="return confirm('Hapus produk ini dari keranjang?')">

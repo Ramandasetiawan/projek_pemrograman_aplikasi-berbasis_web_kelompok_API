@@ -1,4 +1,7 @@
-<?php include '../includes/header.php'; ?>
+<?php 
+require_once '../config/csrf.php';
+include '../includes/header.php'; 
+?>
 <main class="flex-shrink-0">
 <div class="container mt-5">
   <div class="row justify-content-center">
@@ -8,6 +11,7 @@
         <div class="alert alert-danger"><?= htmlspecialchars($_GET['error']) ?></div>
       <?php endif; ?>
       <form action="process_register.php" method="POST">
+        <?= csrf_field() ?>
         <div class="mb-3">
           <input type="text" name="full_name" class="form-control" placeholder="Nama Lengkap" required>
         </div>

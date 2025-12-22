@@ -3,11 +3,15 @@
 ob_start();
 session_start();
 require_once '../config/db.php';
+require_once '../config/csrf.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: login.php');
     exit;
 }
+
+// Verify CSRF token
+check_csrf_token();
 
 $input = trim($_POST['username'] ?? '');
 $password = $_POST['password'] ?? '';

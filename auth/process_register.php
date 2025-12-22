@@ -1,11 +1,15 @@
 <?php
 session_start();
 require_once '../config/db.php';
+require_once '../config/csrf.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: register.php');
     exit;
 }
+
+// Verify CSRF token
+check_csrf_token();
 
 $full_name = trim($_POST['full_name']);
 $username = trim($_POST['username']);
