@@ -8,29 +8,26 @@ if (!isset($_SESSION['user_id'])) {
 
 require_once '../config/db.php';
 
-// Ambil data user
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch();
 
-// Update profil jika form disubmit
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $full_name = trim($_POST['full_name']);
     $email = trim($_POST['email']);
     $phone = trim($_POST['phone'] ?? '');
     $address = trim($_POST['address'] ?? '');
-    
+
     $stmt = $pdo->prepare("UPDATE users SET full_name = ?, email = ?, phone = ?, address = ? WHERE id = ?");
     if ($stmt->execute([$full_name, $email, $phone, $address, $_SESSION['user_id']])) {
         $success = "Profil berhasil diupdate!";
-        // Refresh data
+
         $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
         $stmt->execute([$_SESSION['user_id']]);
         $user = $stmt->fetch();
     }
 }
 
-// Ambil riwayat pesanan
 $stmt = $pdo->prepare("SELECT * FROM orders WHERE user_id = ? ORDER BY order_date DESC LIMIT 10");
 $stmt->execute([$_SESSION['user_id']]);
 $orders = $stmt->fetchAll();
@@ -39,11 +36,11 @@ $orders = $stmt->fetchAll();
 <main class="flex-shrink-0">
 <div class="container mt-4">
     <h2 class="mb-4">Profil Saya</h2>
-    
+
     <?php if (isset($success)): ?>
         <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
     <?php endif; ?>
-    
+
     <div class="row">
         <div class="col-md-8">
             <div class="card mb-4">
@@ -77,7 +74,7 @@ $orders = $stmt->fetchAll();
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
@@ -91,7 +88,7 @@ $orders = $stmt->fetchAll();
             </div>
         </div>
     </div>
-    
+
     <div class="card mt-4">
         <div class="card-header">
             <h5 class="mb-0">Riwayat Pesanan</h5>

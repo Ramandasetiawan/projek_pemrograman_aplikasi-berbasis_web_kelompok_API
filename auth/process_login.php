@@ -1,5 +1,5 @@
 <?php
-// Pastikan tidak ada output sebelum header
+
 ob_start();
 session_start();
 require_once '../config/db.php';
@@ -10,7 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Verify CSRF token
 check_csrf_token();
 
 $input = trim($_POST['username'] ?? '');
@@ -26,15 +25,14 @@ $stmt->execute([$input, $input]);
 $user = $stmt->fetch();
 
 if ($user && password_verify($password, $user['password'])) {
-    // Regenerate session ID untuk keamanan
+
     session_regenerate_id(true);
-    
+
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['username'] = $user['username'];
     $_SESSION['role'] = $user['role'];
     $_SESSION['full_name'] = $user['full_name'];
-    
-    // Redirect berdasarkan role
+
     if ($user['role'] === 'admin') {
         header('Location: ../admin/dashboard.php');
     } else {

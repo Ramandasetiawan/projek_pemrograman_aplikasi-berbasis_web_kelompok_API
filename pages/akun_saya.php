@@ -8,34 +8,31 @@ if (!isset($_SESSION['user_id'])) {
 
 require_once '../config/db.php';
 
-// Ambil data user
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch();
 
-// Update profil jika form disubmit
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $full_name = trim($_POST['full_name']);
     $email = trim($_POST['email']);
     $phone = trim($_POST['phone'] ?? '');
     $address = trim($_POST['address'] ?? '');
-    
+
     $stmt = $pdo->prepare("UPDATE users SET full_name = ?, email = ?, phone = ?, address = ? WHERE id = ?");
     if ($stmt->execute([$full_name, $email, $phone, $address, $_SESSION['user_id']])) {
         $success = "Profil berhasil diupdate!";
-        // Refresh data
+
         $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
         $stmt->execute([$_SESSION['user_id']]);
         $user = $stmt->fetch();
     }
 }
 
-// Ubah password
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     $current_password = $_POST['current_password'];
     $new_password = $_POST['new_password'];
     $confirm_password = $_POST['confirm_password'];
-    
+
     if (!password_verify($current_password, $user['password'])) {
         $password_error = "Password lama salah";
     } elseif ($new_password !== $confirm_password) {
@@ -51,12 +48,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     }
 }
 
-// Ambil riwayat pesanan
 $stmt = $pdo->prepare("SELECT * FROM orders WHERE user_id = ? ORDER BY order_date DESC");
 $stmt->execute([$_SESSION['user_id']]);
 $orders = $stmt->fetchAll();
 
-// Ambil statistik
 $stmt = $pdo->prepare("SELECT COUNT(*) as total_orders, SUM(total_amount) as total_spent FROM orders WHERE user_id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $stats = $stmt->fetch();
@@ -65,7 +60,7 @@ $stats = $stmt->fetch();
 <main class="flex-shrink-0">
 <div class="container mt-4">
     <h2 class="mb-4">Akun Saya</h2>
-    
+
     <div class="row">
         <!-- Sidebar Menu -->
         <div class="col-md-3 mb-4">
@@ -86,7 +81,7 @@ $stats = $stmt->fetch();
                     🚪 Logout
                 </a>
             </div>
-            
+
             <!-- Stats Card -->
             <div class="card mt-3">
                 <div class="card-header">
@@ -99,7 +94,7 @@ $stats = $stmt->fetch();
                 </div>
             </div>
         </div>
-        
+
         <!-- Content -->
         <div class="col-md-9">
             <div class="tab-content">
@@ -113,7 +108,7 @@ $stats = $stmt->fetch();
                             <?php if (isset($success)): ?>
                                 <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
                             <?php endif; ?>
-                            
+
                             <form method="POST">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
@@ -125,27 +120,27 @@ $stats = $stmt->fetch();
                                         <input type="text" class="form-control" value="<?= ucfirst($user['role']) ?>" disabled>
                                     </div>
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label class="form-label">Nama Lengkap *</label>
                                     <input type="text" name="full_name" class="form-control" value="<?= htmlspecialchars($user['full_name']) ?>" required>
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label class="form-label">Email *</label>
                                     <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($user['email']) ?>" required>
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label class="form-label">No. Telepon</label>
                                     <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($user['phone'] ?? '') ?>" placeholder="+62">
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label class="form-label">Alamat Lengkap</label>
                                     <textarea name="address" class="form-control" rows="3" placeholder="Alamat lengkap dengan kode pos"><?= htmlspecialchars($user['address'] ?? '') ?></textarea>
                                 </div>
-                                
+
                                 <button type="submit" name="update_profile" class="btn btn-primary">
                                     💾 Simpan Perubahan
                                 </button>
@@ -153,7 +148,7 @@ $stats = $stmt->fetch();
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Password -->
                 <div class="tab-pane fade" id="password">
                     <div class="card">
@@ -167,24 +162,24 @@ $stats = $stmt->fetch();
                             <?php if (isset($password_error)): ?>
                                 <div class="alert alert-danger"><?= htmlspecialchars($password_error) ?></div>
                             <?php endif; ?>
-                            
+
                             <form method="POST">
                                 <div class="mb-3">
                                     <label class="form-label">Password Lama *</label>
                                     <input type="password" name="current_password" class="form-control" required>
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label class="form-label">Password Baru *</label>
                                     <input type="password" name="new_password" class="form-control" minlength="6" required>
                                     <small class="text-muted">Minimal 6 karakter</small>
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label class="form-label">Konfirmasi Password Baru *</label>
                                     <input type="password" name="confirm_password" class="form-control" minlength="6" required>
                                 </div>
-                                
+
                                 <button type="submit" name="change_password" class="btn btn-primary">
                                     🔒 Ubah Password
                                 </button>
@@ -192,7 +187,7 @@ $stats = $stmt->fetch();
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Pesanan -->
                 <div class="tab-pane fade" id="pesanan">
                     <div class="card">

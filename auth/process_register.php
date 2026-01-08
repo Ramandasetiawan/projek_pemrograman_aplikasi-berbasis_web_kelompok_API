@@ -8,7 +8,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Verify CSRF token
 check_csrf_token();
 
 $full_name = trim($_POST['full_name']);

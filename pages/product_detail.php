@@ -9,7 +9,6 @@ if (!isset($_GET['id'])) {
 
 $product_id = (int)$_GET['id'];
 
-// Ambil detail produk
 $stmt = $pdo->prepare("
     SELECT p.*, c.name as category_name 
     FROM products p 
@@ -24,15 +23,13 @@ if (!$product) {
     exit;
 }
 
-// Ambil produk terkait (kategori sama) - optimized random selection
-// Get total count first
 $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM products WHERE category_id = ? AND id != ?");
 $stmt->execute([$product['category_id'], $product_id]);
 $total = $stmt->fetchColumn();
 
 $related_products = [];
 if ($total > 0) {
-    // Use random offset instead of ORDER BY RAND() for better performance
+
     $offset = max(0, rand(0, $total - min(4, $total)));
     $stmt = $pdo->prepare("
         SELECT * FROM products 
@@ -58,11 +55,11 @@ $imageSrc = (strpos($product['image'], 'http') === 0) ? $product['image'] : 'ass
             <li class="breadcrumb-item active"><?= htmlspecialchars($product['name']) ?></li>
         </ol>
     </nav>
-    
+
     <?php if (isset($_GET['success'])): ?>
         <div class="alert alert-success"><?= htmlspecialchars($_GET['success']) ?></div>
     <?php endif; ?>
-    
+
     <div class="row">
         <!-- Gambar Produk -->
         <div class="col-md-5">
@@ -73,24 +70,24 @@ $imageSrc = (strpos($product['image'], 'http') === 0) ? $product['image'] : 'ass
                      onerror="this.src='https://via.placeholder.com/500x500?text=No+Image'">
             </div>
         </div>
-        
+
         <!-- Detail Produk -->
         <div class="col-md-7">
             <div class="card">
                 <div class="card-body">
                     <span class="badge bg-primary mb-2"><?= htmlspecialchars($product['category_name']) ?></span>
                     <h2 class="card-title mb-3"><?= htmlspecialchars($product['name']) ?></h2>
-                    
+
                     <?php if ($product['brand']): ?>
                         <p class="text-muted mb-2">
                             <strong>Brand:</strong> <?= htmlspecialchars($product['brand']) ?>
                         </p>
                     <?php endif; ?>
-                    
+
                     <div class="mb-3">
                         <h3 class="text-primary">Rp <?= number_format($product['price'], 0, ',', '.') ?></h3>
                     </div>
-                    
+
                     <div class="mb-3">
                         <strong>Stok:</strong> 
                         <?php if ($product['stock'] > 0): ?>
@@ -99,23 +96,23 @@ $imageSrc = (strpos($product['image'], 'http') === 0) ? $product['image'] : 'ass
                             <span class="badge bg-danger">Stok Habis</span>
                         <?php endif; ?>
                     </div>
-                    
+
                     <?php if ($product['description']): ?>
                         <div class="mb-3">
                             <h5>Deskripsi</h5>
                             <p><?= nl2br(htmlspecialchars($product['description'])) ?></p>
                         </div>
                     <?php endif; ?>
-                    
+
                     <?php if ($product['specifications']): ?>
                         <div class="mb-3">
                             <h5>Spesifikasi</h5>
                             <p class="text-muted"><?= nl2br(htmlspecialchars($product['specifications'])) ?></p>
                         </div>
                     <?php endif; ?>
-                    
+
                     <hr>
-                    
+
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <?php if ($product['stock'] > 0): ?>
                             <form action="../handlers/cart_add.php" method="POST" class="mb-3">
@@ -152,7 +149,7 @@ $imageSrc = (strpos($product['image'], 'http') === 0) ? $product['image'] : 'ass
             </div>
         </div>
     </div>
-    
+
     <!-- Produk Terkait -->
     <?php if (count($related_products) > 0): ?>
         <div class="mt-5">

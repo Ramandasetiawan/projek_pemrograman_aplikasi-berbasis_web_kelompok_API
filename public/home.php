@@ -2,15 +2,12 @@
 require_once '../includes/header.php';
 require_once '../config/db.php';
 
-// Ambil produk terbaru
 $stmt = $pdo->query("SELECT * FROM products ORDER BY created_at DESC LIMIT 8");
 $latest_products = $stmt->fetchAll();
 
-// Ambil kategori
 $stmt = $pdo->query("SELECT * FROM categories LIMIT 6");
 $categories = $stmt->fetchAll();
 
-// Ambil produk terlaris (simulasi dengan random)
 $stmt = $pdo->query("SELECT * FROM products ORDER BY RAND() LIMIT 4");
 $featured_products = $stmt->fetchAll();
 ?>

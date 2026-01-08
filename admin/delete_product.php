@@ -4,7 +4,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') exit;
 require_once '../config/db.php';
 
 $id = $_GET['id'] ?? 0;
-// Opsional: hapus gambar
+
 $stmt = $pdo->prepare("SELECT image FROM products WHERE id = ?");
 $stmt->execute([$id]);
 $image = $stmt->fetchColumn();

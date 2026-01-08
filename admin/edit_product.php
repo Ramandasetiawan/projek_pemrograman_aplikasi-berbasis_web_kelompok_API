@@ -22,37 +22,33 @@ $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Verify CSRF token
+
     check_csrf_token();
-    
-    // Sanitize inputs
+
     $name = trim($_POST['name']);
     $desc = trim($_POST['description']);
     $price = filter_var($_POST['price'], FILTER_VALIDATE_FLOAT);
     $stock = filter_var($_POST['stock'], FILTER_VALIDATE_INT);
-    
-    // Validate inputs
+
     if (empty($name) || $price === false || $stock === false) {
         $error = 'Data tidak valid. Pastikan semua field terisi dengan benar.';
     } elseif ($price < 0 || $stock < 0) {
         $error = 'Harga dan stok tidak boleh negatif.';
     } else {
         $image = $product['image']; // Keep old image by default
-        
-        // Handle new image upload
+
         if (!empty($_FILES['image']['name'])) {
             $upload_result = validate_and_save_image($_FILES['image']);
-            
+
             if ($upload_result['success']) {
-                // Delete old image safely
+
                 delete_image_safe($product['image']);
                 $image = $upload_result['filename'];
             } else {
                 $error = $upload_result['message'];
             }
         }
-        
-        // Update if no error
+
         if (empty($error)) {
             try {
                 $stmt = $pdo->prepare("UPDATE products SET name = ?, description = ?, price = ?, image = ?, stock = ? WHERE id = ?");
@@ -71,15 +67,15 @@ include '../includes/header.php';
 <main class="flex-shrink-0">
 <div class="container mt-4">
   <h3>Edit Produk</h3>
-  
+
   <?php if (!empty($error)): ?>
     <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
   <?php endif; ?>
-  
+
   <?php if (!empty($success)): ?>
     <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
   <?php endif; ?>
-  
+
   <form method="POST" enctype="multipart/form-data">
     <?= csrf_field() ?>
     <div class="mb-3">

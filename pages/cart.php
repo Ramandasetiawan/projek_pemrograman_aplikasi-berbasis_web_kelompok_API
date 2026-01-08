@@ -9,7 +9,6 @@ if (!isset($_SESSION['user_id'])) {
 
 require_once '../config/db.php';
 
-// Ambil data cart dengan join ke products
 $stmt = $pdo->prepare("
     SELECT c.*, p.name, p.price, p.image, p.stock 
     FROM cart c 
@@ -20,7 +19,6 @@ $stmt = $pdo->prepare("
 $stmt->execute([$_SESSION['user_id']]);
 $cart_items = $stmt->fetchAll();
 
-// Hitung total
 $total = 0;
 foreach ($cart_items as $item) {
     $total += $item['price'] * $item['quantity'];
@@ -30,15 +28,15 @@ foreach ($cart_items as $item) {
 <main class="flex-shrink-0">
 <div class="container mt-4">
     <h2 class="mb-4">Keranjang Belanja</h2>
-    
+
     <?php if (isset($_GET['success'])): ?>
         <div class="alert alert-success"><?= htmlspecialchars($_GET['success']) ?></div>
     <?php endif; ?>
-    
+
     <?php if (isset($_GET['error'])): ?>
         <div class="alert alert-danger"><?= htmlspecialchars($_GET['error']) ?></div>
     <?php endif; ?>
-    
+
     <?php if (count($cart_items) > 0): ?>
         <div class="row">
             <div class="col-md-8">
@@ -90,7 +88,7 @@ foreach ($cart_items as $item) {
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-header">

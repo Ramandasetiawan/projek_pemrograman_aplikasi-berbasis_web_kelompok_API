@@ -1,0 +1,41 @@
+# Sensitive configuration files
+config/db.php
+
+# Environment files
+.env
+.env.local
+
+# Vendor directories
+vendor/
+node_modules/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.sublime-*
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Uploaded files (you may want to keep these in git, adjust as needed)
+# public/uploads/*
+# !public/uploads/.gitkeep
+
+# Cache files
+cache/
+*.cache
+
+# OS generated files
+Thumbs.db
+.DS_Store
+
+# Session files
+sessions/

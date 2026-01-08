@@ -9,7 +9,6 @@ if (!isset($_SESSION['user_id'])) {
 
 require_once '../config/db.php';
 
-// Ambil data cart
 $stmt = $pdo->prepare("
     SELECT c.*, p.name, p.price, p.image 
     FROM cart c 
@@ -24,64 +23,58 @@ if (count($cart_items) === 0) {
     exit;
 }
 
-// Hitung total
 $subtotal = 0;
 foreach ($cart_items as $item) {
     $subtotal += $item['price'] * $item['quantity'];
 }
 
-$shipping_cost = 25000; // Ongkir flat
+$shipping_cost = 25000;
 $total = $subtotal + $shipping_cost;
 
-// Ambil data user untuk default alamat
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch();
 
-// Process order jika form disubmit
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Verify CSRF token
+
     check_csrf_token();
-    
+
     $shipping_address = trim($_POST['shipping_address']);
     $payment_method = $_POST['payment_method'];
     $notes = trim($_POST['notes'] ?? '');
-    
+
     if (empty($shipping_address)) {
         $error = "Alamat pengiriman harus diisi";
     } else {
         try {
             $pdo->beginTransaction();
-            
-            // Validasi ulang stok untuk setiap item dengan row locking
+
             $stock_errors = [];
             foreach ($cart_items as $item) {
-                // Lock row untuk prevent race condition
+
                 $stmt = $pdo->prepare("SELECT id, stock FROM products WHERE id = ? FOR UPDATE");
                 $stmt->execute([$item['product_id']]);
                 $product = $stmt->fetch();
-                
+
                 if (!$product) {
                     $stock_errors[] = $item['name'] . " tidak ditemukan";
                 } elseif ($product['stock'] < $item['quantity']) {
                     $stock_errors[] = $item['name'] . " stok tidak mencukupi (tersisa: " . $product['stock'] . ")";
                 }
             }
-            
-            // Jika ada error stok, rollback dan tampilkan error
+
             if (!empty($stock_errors)) {
                 $pdo->rollBack();
                 $error = "Gagal checkout: " . implode(", ", $stock_errors);
             } else {
-                // Insert order
+
                 $stmt = $pdo->prepare("
                     INSERT INTO orders (user_id, total_amount, status, payment_method, shipping_address, notes) 
                     VALUES (?, ?, 'pending', ?, ?, ?)
                 ");
                 $stmt->execute([$_SESSION['user_id'], $total, $payment_method, $shipping_address, $notes]);
                 $order_id = $pdo->lastInsertId();
-                
-                // Insert order items dan update stok
+
                 foreach ($cart_items as $item) {
                     $subtotal_item = $item['price'] * $item['quantity'];
                     $stmt = $pdo->prepare("
@@ -89,22 +82,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         VALUES (?, ?, ?, ?, ?)
                     ");
                     $stmt->execute([$order_id, $item['product_id'], $item['quantity'], $item['price'], $subtotal_item]);
-                    
-                    // Update stok produk (already locked by FOR UPDATE)
+
                     $stmt = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
                     $stmt->execute([$item['quantity'], $item['product_id']]);
                 }
-                
-                // Hapus cart
+
                 $stmt = $pdo->prepare("DELETE FROM cart WHERE user_id = ?");
                 $stmt->execute([$_SESSION['user_id']]);
-                
+
                 $pdo->commit();
-                
+
                 header('Location: order_success.php?order_id=' . $order_id);
                 exit;
             }
-            
+
         } catch (Exception $e) {
             $pdo->rollBack();
             $error = "Terjadi kesalahan: " . $e->getMessage();
@@ -116,11 +107,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <main class="flex-shrink-0">
 <div class="container mt-4">
     <h2 class="mb-4">Checkout</h2>
-    
+
     <?php if (isset($error)): ?>
         <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
-    
+
     <form method="POST">
         <?= csrf_field() ?>
         <div class="row">
@@ -153,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="card">
                     <div class="card-header">
                         <h5 class="mb-0">Metode Pembayaran</h5>
@@ -183,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-4">
                 <div class="card mb-4">
                     <div class="card-header">

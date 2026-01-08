@@ -2,7 +2,6 @@
 require_once '../includes/header.php';
 require_once '../config/db.php';
 
-// Process form jika disubmit
 $success = false;
 $error = '';
 
@@ -11,14 +10,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
     $subject = trim($_POST['subject']);
     $message = trim($_POST['message']);
-    
+
     if (empty($name) || empty($email) || empty($subject) || empty($message)) {
         $error = 'Semua field wajib diisi';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Format email tidak valid';
     } else {
-        // Di sini bisa disimpan ke database atau kirim email
-        // Untuk demo, kita anggap berhasil
+
         $success = true;
     }
 }
@@ -51,38 +49,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php if ($error): ?>
               <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
-            
+
             <form method="POST">
               <div class="mb-3">
                 <label class="form-label">Nama Lengkap *</label>
                 <input type="text" name="name" class="form-control" required 
                        value="<?= isset($_POST['name']) ? htmlspecialchars($_POST['name']) : '' ?>">
               </div>
-              
+
               <div class="mb-3">
                 <label class="form-label">Email *</label>
                 <input type="email" name="email" class="form-control" required
                        value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>">
               </div>
-              
+
               <div class="mb-3">
                 <label class="form-label">Subjek *</label>
                 <input type="text" name="subject" class="form-control" required
                        value="<?= isset($_POST['subject']) ? htmlspecialchars($_POST['subject']) : '' ?>">
               </div>
-              
+
               <div class="mb-3">
                 <label class="form-label">Pesan *</label>
                 <textarea name="message" class="form-control" rows="5" required><?= isset($_POST['message']) ? htmlspecialchars($_POST['message']) : '' ?></textarea>
               </div>
-              
+
               <button type="submit" class="btn btn-primary">Kirim Pesan</button>
             </form>
           <?php endif; ?>
         </div>
       </div>
     </div>
-    
+
     <!-- Info Kontak -->
     <div class="col-md-5">
       <div class="card mb-4">
@@ -98,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               Indonesia
             </p>
           </div>
-          
+
           <div class="mb-4">
             <h6 class="mb-2">📞 Telepon</h6>
             <p class="text-muted">
@@ -106,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <a href="tel:+628123456789" class="text-decoration-none">+62 812 3456 789</a>
             </p>
           </div>
-          
+
           <div class="mb-4">
             <h6 class="mb-2">📧 Email</h6>
             <p class="text-muted">
@@ -114,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <a href="mailto:support@etectstore.com" class="text-decoration-none">support@etectstore.com</a>
             </p>
           </div>
-          
+
           <div class="mb-4">
             <h6 class="mb-2">🕒 Jam Operasional</h6>
             <p class="text-muted">
@@ -125,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </div>
         </div>
       </div>
-      
+
       <div class="card">
         <div class="card-header">
           <h4 class="mb-0">Media Sosial</h4>
@@ -149,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
     </div>
   </div>
-  
+
   <!-- Map -->
   <div class="row mt-4">
     <div class="col-12">
@@ -170,7 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
     </div>
   </div>
-  
+
   <!-- FAQ -->
   <div class="row mt-5">
     <div class="col-12">
@@ -188,7 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
           </div>
         </div>
-        
+
         <div class="accordion-item">
           <h2 class="accordion-header">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
@@ -201,7 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
           </div>
         </div>
-        
+
         <div class="accordion-item">
           <h2 class="accordion-header">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
@@ -214,7 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
           </div>
         </div>
-        
+
         <div class="accordion-item">
           <h2 class="accordion-header">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
